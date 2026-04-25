@@ -1,0 +1,91 @@
+// TypeRace Challenge schema
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["typerace"]
+}
+
+enum GameMode {
+  SOLO
+  DUEL
+
+  @@schema("typerace")
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+
+  @@schema("typerace")
+}
+
+enum RoomStatus {
+  WAITING
+  RUNNING
+  FINISHED
+  CANCELLED
+
+  @@schema("typerace")
+}
+
+model Text {
+  id         String     @id @default(uuid())
+  content    String
+  difficulty Difficulty @default(MEDIUM)
+  language   String     @default("pt-br")
+  createdAt  DateTime   @default(now())
+
+  rooms  Room[]
+  scores Score[]
+
+  @@index([difficulty])
+  @@map("texts")
+  @@schema("typerace")
+}
+
+model Room {
+  id         String     @id @default(uuid())
+  code       String     @unique
+  status     RoomStatus @default(WAITING)
+  textId     String?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  text   Text?   @relation(fields: [textId], references: [id])
+  scores Score[]
+
+  @@index([code])
+  @@index([status])
+  @@map("rooms")
+  @@schema("typerace")
+}
+
+model Score {
+  id         String   @id @default(uuid())
+  mode       GameMode
+  playerName String
+  wpm        Float
+  accuracy   Float
+  durationMs Int
+  textId     String?
+  roomId     String?
+  createdAt  DateTime @default(now())
+
+  text Text? @relation(fields: [textId], references: [id])
+  room Room? @relation(fields: [roomId], references: [id])
+
+  @@index([mode])
+  @@index([roomId])
+  @@index([createdAt])
+  @@map("scores")
+  @@schema("typerace")
+}

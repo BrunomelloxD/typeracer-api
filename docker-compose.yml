@@ -1,0 +1,32 @@
+services:
+  nest-api-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nest-api-migrate
+    command: npx prisma migrate deploy
+    env_file:
+      - .env
+    networks:
+      - app-network
+    restart: 'no'
+
+  nest-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nest-api
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      nest-api-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
