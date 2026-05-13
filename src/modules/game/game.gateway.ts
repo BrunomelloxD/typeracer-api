@@ -24,10 +24,7 @@ const COUNTDOWN_SECONDS = 3;
 
 @WebSocketGateway({
     namespace: '/game',
-    cors: {
-        origin: serverConfig.config.corsOrigin ?? ['http://localhost:3000'],
-        credentials: true,
-    },
+    cors: '*',
 })
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
 export class GameGateway implements OnGatewayInit, OnGatewayDisconnect {
